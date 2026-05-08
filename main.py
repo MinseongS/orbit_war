@@ -1,6 +1,5 @@
-def main():
-    print("Hello from orbit-war!")
+"""Submission entry point. Re-exports the starter agent from our package.
 
+When we submit a bundle to Kaggle, this is the file the platform invokes."""
 
-if __name__ == "__main__":
-    main()
+from orbit_war.bots.starter_bot import agent  # noqa: F401
