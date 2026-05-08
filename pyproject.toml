@@ -1,0 +1,15 @@
+[project]
+name = "orbit-war"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.13"
+dependencies = [
+    "kaggle>=2.1.2",
+    "kaggle-environments>=1.28.0",
+    "numpy>=2.4.4",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.3",
+]
