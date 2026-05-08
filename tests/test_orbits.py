@@ -89,6 +89,7 @@ def test_precompute_table_matches_per_step_function(seed: int):
 
 def test_is_orbiting_uses_official_threshold():
     static_like = Planet(0, -1, 5, 5, 1.0, 50, 1)
+    assert not is_orbiting(static_like)
     orbiting_like = Planet(0, -1, CENTER + 10, CENTER, 1.0, 50, 1)
     assert is_orbiting(orbiting_like)
     far = Planet(0, -1, CENTER + ROTATION_RADIUS_LIMIT, CENTER, 1.0, 50, 1)
