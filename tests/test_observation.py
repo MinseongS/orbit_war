@@ -44,3 +44,22 @@ def test_gameview_distance_uses_euclidean():
 
     expected = math.hypot(a.x - b.x, a.y - b.y)
     assert view.distance(a, b) == expected
+
+
+def test_gameview_handles_none_valued_obs_fields():
+    """from_obs should not crash if obs has None for list-valued fields."""
+    obs = {
+        "planets": None,
+        "fleets": None,
+        "initial_planets": None,
+        "comet_planet_ids": None,
+        "player": 0,
+        "angular_velocity": 0.05,
+        "remainingOverageTime": None,
+    }
+    view = GameView.from_obs(obs)
+    assert view.planets == ()
+    assert view.fleets == ()
+    assert view.initial_planets == ()
+    assert view.comet_planet_ids == frozenset()
+    assert view.remaining_overage_time == 0.0

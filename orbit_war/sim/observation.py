@@ -22,17 +22,17 @@ class GameView:
     @staticmethod
     def from_obs(obs) -> "GameView":
         get = obs.get if isinstance(obs, dict) else lambda k, d=None: getattr(obs, k, d)
-        planets = tuple(Planet(*p) for p in get("planets", []))
-        fleets = tuple(Fleet(*f) for f in get("fleets", []))
-        initial = tuple(Planet(*p) for p in get("initial_planets", []))
+        planets = tuple(Planet(*p) for p in (get("planets") or []))
+        fleets = tuple(Fleet(*f) for f in (get("fleets") or []))
+        initial = tuple(Planet(*p) for p in (get("initial_planets") or []))
         return GameView(
-            player=int(get("player", 0)),
+            player=int(get("player") or 0),
             planets=planets,
             fleets=fleets,
-            angular_velocity=float(get("angular_velocity", 0.0)),
+            angular_velocity=float(get("angular_velocity") or 0.0),
             initial_planets=initial,
-            comet_planet_ids=frozenset(get("comet_planet_ids", []) or []),
-            remaining_overage_time=float(get("remainingOverageTime", 0.0)),
+            comet_planet_ids=frozenset(get("comet_planet_ids") or []),
+            remaining_overage_time=float(get("remainingOverageTime") or 0.0),
         )
 
     def my_planets(self) -> tuple[Planet, ...]:
