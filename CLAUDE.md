@@ -17,6 +17,7 @@ Kaggle simulation competition. Bot-vs-bot 1v1 / 4p FFA on a 100x100 continuous b
 - Run things with `uv run …` (never bare `python`).
 - Keep agent code submission-ready: a `main.py` at the project root with an `agent(obs)` function (or a `tar.gz` bundle).
 - Test locally with `kaggle_environments.make("orbit_wars")` before every submission — daily quota is precious.
+- Run tests with `uv run pytest -q`.
 
 ---
 
