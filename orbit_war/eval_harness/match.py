@@ -32,7 +32,15 @@ def play_match(
     episode_steps: int = 500,
     act_timeout: int = 1,
 ) -> MatchResult:
-    """Run a single 1v1 episode with bot_a as player 0 and bot_b as player 1."""
+    """Run a single 1v1 episode with bot_a as player 0 and bot_b as player 1.
+
+    We always run with `debug=True` so local test failures surface real tracebacks.
+    The catch: kaggle_environments' built-in agent exception handler (agent.py
+    `act()`) is *only* active when `debug=False`. Under `debug=True` an unhandled
+    bot exception propagates through `env.run()` and crashes the harness. We
+    therefore wrap each callable in a per-side error catcher that flips a flag
+    and returns `[]` so the game continues. Do not remove these wrappers.
+    """
     error_a = False
     error_b = False
 
