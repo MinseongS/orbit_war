@@ -10,6 +10,7 @@ multi-source consolidation, and tack/feint patterns.
 
 from __future__ import annotations
 
+from orbit_war.eval.features import incoming_threat
 from orbit_war.plan_gen.step import Step, ships_needed_to_capture
 from orbit_war.sim.observation import GameView
 
@@ -42,8 +43,6 @@ def production_attack_template(view: GameView) -> list[Step]:
         )
         needed = ships_needed_to_capture(best)
         ships = min(int(src.ships), needed)
-        if ships < 1:
-            continue
         score = best.production / (1.0 + GameView.distance(src, best))
         proposals.append(
             Step(
@@ -55,9 +54,6 @@ def production_attack_template(view: GameView) -> list[Step]:
             )
         )
     return proposals
-
-
-from orbit_war.eval.features import incoming_threat
 
 
 def defensive_reinforce_template(view: GameView) -> list[Step]:

@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from orbit_war.eval.features import surplus_ships
 from orbit_war.plan_gen.composer import compose_plan
+from orbit_war.plan_gen.filters import filter_capturable
 from orbit_war.plan_gen.step import Step
 from orbit_war.plan_gen.templates import (
     defensive_reinforce_template,
@@ -43,27 +44,6 @@ def _weighted(steps: list[Step], weight: float) -> list[Step]:
     ]
 
 
-def _filter_capturable(steps: list[Step], view: GameView) -> list[Step]:
-    """Remove attack steps that cannot capture their target with the ships sent."""
-    planet_by_id = {p.id: p for p in view.planets}
-    player = view.player
-    result = []
-    for s in steps:
-        target = planet_by_id.get(s.target_planet_id)
-        if target is None:
-            result.append(s)
-            continue
-        # Friendly reinforcement — always keep.
-        if target.owner == player:
-            result.append(s)
-            continue
-        # Attack/capture — only keep if we have enough ships.
-        needed = int(target.ships) + 1
-        if s.ships >= needed:
-            result.append(s)
-    return result
-
-
 def agent(obs) -> list[list]:
     view = GameView.from_obs(obs)
 
@@ -90,7 +70,7 @@ def agent(obs) -> list[list]:
 
     # Prune attack candidates that cannot capture their target — sending fewer
     # ships than the defender wastes ships without gaining anything.
-    candidates = _filter_capturable(candidates, view)
+    candidates = filter_capturable(candidates, view)
 
     surplus = surplus_ships(view, view.player)
     plan = compose_plan(candidates, surplus, allow_truncation=False)
