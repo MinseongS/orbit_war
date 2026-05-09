@@ -11,6 +11,7 @@ multi-source consolidation, and tack/feint patterns.
 from __future__ import annotations
 
 from orbit_war.eval.features import incoming_threat
+from orbit_war.plan_gen.aim import aim_with_orbit_prediction
 from orbit_war.plan_gen.step import Step, ships_needed_to_capture
 from orbit_war.sim.observation import GameView
 
@@ -44,11 +45,12 @@ def production_attack_template(view: GameView) -> list[Step]:
         needed = ships_needed_to_capture(best)
         ships = min(int(src.ships), needed)
         score = best.production / (1.0 + GameView.distance(src, best))
+        angle, _arrival = aim_with_orbit_prediction(src, best, ships, view)
         proposals.append(
             Step(
                 from_planet_id=int(src.id),
                 target_planet_id=int(best.id),
-                angle=Step.angle_to(src, best),
+                angle=angle,
                 ships=int(ships),
                 score=float(score),
             )
@@ -83,11 +85,12 @@ def defensive_reinforce_template(view: GameView) -> list[Step]:
         if ships < 1:
             continue
         score = deficit / (1.0 + GameView.distance(nearest, target))
+        angle, _arrival = aim_with_orbit_prediction(nearest, target, ships, view)
         proposals.append(
             Step(
                 from_planet_id=int(nearest.id),
                 target_planet_id=int(target.id),
-                angle=Step.angle_to(nearest, target),
+                angle=angle,
                 ships=int(ships),
                 score=float(score),
             )
@@ -126,11 +129,12 @@ def snipe_undefended_template(view: GameView) -> list[Step]:
         if nearest.ships < needed:
             continue
         score = tgt.production / (needed + 1.0)
+        angle, _arrival = aim_with_orbit_prediction(nearest, tgt, needed, view)
         proposals.append(
             Step(
                 from_planet_id=int(nearest.id),
                 target_planet_id=int(tgt.id),
-                angle=Step.angle_to(nearest, tgt),
+                angle=angle,
                 ships=int(needed),
                 score=float(score),
             )

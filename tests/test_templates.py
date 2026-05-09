@@ -135,3 +135,35 @@ def test_snipe_undefended_skips_planets_we_cant_afford():
     )
     steps = snipe_undefended_template(view)
     assert steps == []
+
+
+import math
+
+from kaggle_environments import make as _make_env
+
+from orbit_war.sim.orbits import is_orbiting
+
+
+def test_production_attack_uses_orbit_aware_aim_for_orbiting_targets():
+    env = _make_env("orbit_wars", configuration={"seed": 7}, debug=True)
+    env.reset(num_agents=2)
+    obs = env.steps[0][0]["observation"]
+    view = GameView.from_obs(obs)
+
+    steps = production_attack_template(view)
+    by_target = {p.id: p for p in view.planets}
+
+    # Find at least one step targeting an orbiting non-source planet.
+    diverged = False
+    for s in steps:
+        target = by_target[s.target_planet_id]
+        src = by_target[s.from_planet_id]
+        if not is_orbiting(target):
+            continue
+        naive = math.atan2(target.y - src.y, target.x - src.x)
+        if not math.isclose(s.angle, naive, abs_tol=1e-3):
+            diverged = True
+            break
+    # If every target is static this test is uninformative — accept either way.
+    if any(is_orbiting(by_target[s.target_planet_id]) for s in steps):
+        assert diverged, "expected at least one orbit-aware angle to differ from naive atan2"
