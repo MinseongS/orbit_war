@@ -27,3 +27,6 @@ addopts = "-ra --strict-markers"
 filterwarnings = [
     "ignore::DeprecationWarning:kaggle_environments.*",
 ]
+
+[project.scripts]
+ow-gate = "orbit_war.eval_harness.cli:main"

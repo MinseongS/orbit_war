@@ -1674,7 +1674,7 @@ wheels = [
 [[package]]
 name = "orbit-war"
 version = "0.1.0"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "kaggle" },
     { name = "kaggle-environments" },
