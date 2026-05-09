@@ -18,7 +18,7 @@ Kaggle simulation competition. Bot-vs-bot 1v1 / 4p FFA on a 100x100 continuous b
 - Keep agent code submission-ready: a `main.py` at the project root with an `agent(obs)` function (or a `tar.gz` bundle).
 - Test locally with `kaggle_environments.make("orbit_wars")` before every submission — daily quota is precious.
 - Run tests with `uv run pytest -q`.
-- W3 champion: heuristic_v3 (orbit-aware aim + 6 templates + 15-turn plan validation). Use `uv run ow-gate orbit_war.bots.heuristic_v3:agent` to gate challengers.
+- W4 champion: heuristic_v4 (consolidation fix + 7 templates including trade_down_strike + passive validator). v5 (per-step regression) fell back to v4 weights — see commit `366eba0`. Use `uv run ow-gate orbit_war.bots.heuristic_v4:agent` to gate challengers.
 
 ---
 

@@ -2,3 +2,4 @@
 2026-05-08T22:50:44Z  starter  b18194e  W1 baseline submission
 2026-05-09T13:45:00Z  heuristic_v1  e769b07  W2 v1 gate result: OVERALL: FAIL — passed sanity:random/diversity:greedy/champion, failed sanity:starter and diversity:public_tactical (expected)
 2026-05-09T15:42:25Z  heuristic_v3  1f89a0e  W3 v3 gate result: OVERALL FAIL — passed sanity:random (100%), sanity:starter (98%), diversity:greedy (92%), diversity:public_tactical (64%); failed champion vs v1 (46% < 55%); not submitted
+2026-05-09T17:14:15Z  heuristic_v4  366eba0  W4 gate: sanity_random=100%, sanity_starter=100%, diversity_greedy=96%, diversity_public_tactical=30% (FAIL), champion=56.8% (PASS); public_tactical tier <40% → not submitted
