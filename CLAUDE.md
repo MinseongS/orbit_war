@@ -18,7 +18,8 @@ Kaggle simulation competition. Bot-vs-bot 1v1 / 4p FFA on a 100x100 continuous b
 - Keep agent code submission-ready: a `main.py` at the project root with an `agent(obs)` function (or a `tar.gz` bundle).
 - Test locally with `kaggle_environments.make("orbit_wars")` before every submission — daily quota is precious.
 - Run tests with `uv run pytest -q`.
-- W4 champion: heuristic_v4 (consolidation fix + 7 templates including trade_down_strike + passive validator). v5 (per-step regression) fell back to v4 weights — see commit `366eba0`. Use `uv run ow-gate orbit_war.bots.heuristic_v4:agent` to gate challengers.
+- W4 champion: heuristic_v4 (7 templates incl. trade_down_strike, passive validator). Tied with v3 in champion tier (47.5% over 50 games — noise). Filter aggregation reverted (commit `b65f7e9`) after it regressed both v3 and v4 vs public_tactical from 64% to 32%. v5 fell back to v4 weights (per-step regression failed). Use `uv run ow-gate orbit_war.bots.heuristic_v4:agent` to gate challengers.
+- W5 priorities: redesign multi_source_consolidation to only emit when no solo capture (currently dead code); retry adversarial validator with looser slack; try CMA-ES tuning (per-game and per-step regression both failed).
 
 ---
 
