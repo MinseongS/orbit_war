@@ -1,0 +1,28 @@
+{
+  "feature_names": [
+    "total_ships_self",
+    "total_ships_enemy",
+    "ship_diff",
+    "total_production_self",
+    "total_production_enemy",
+    "production_diff",
+    "owned_planets_self",
+    "owned_planets_enemy",
+    "surplus_total_self",
+    "incoming_threat_self",
+    "step_normalized"
+  ],
+  "weights": [
+    -7.047230132444371e-05,
+    5.3397384108056726e-05,
+    -0.00012386968543004004,
+    0.00638656509133022,
+    -0.004760645133488839,
+    0.01114721022481897,
+    0.017102554900436714,
+    -0.021097826148442092,
+    -1.1980866116413973e-05,
+    -2.4579662137662265e-05,
+    0.2575393557481899
+  ]
+}
