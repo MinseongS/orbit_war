@@ -140,3 +140,54 @@ def snipe_undefended_template(view: GameView) -> list[Step]:
             )
         )
     return proposals
+
+
+CONSOLIDATION_MIN_TARGET_PRODUCTION = 3
+CONSOLIDATION_TOP_K_SOURCES = 4
+
+
+def multi_source_consolidation_template(view: GameView) -> list[Step]:
+    """For each rich non-owned target, gather contributing fleets from up to
+    `CONSOLIDATION_TOP_K_SOURCES` of our nearest planets that can each afford
+    a partial contribution. The composer's surplus check decides which
+    contributions land.
+
+    Each source contributes ~ceil(needed / N) ships (capped at half its
+    garrison) so that across N sources, the combined fleet exceeds the
+    target's defender count."""
+    sources = [p for p in view.my_planets() if p.ships >= 5]
+    if len(sources) < 2:
+        return []
+
+    rich_targets = [
+        t
+        for t in view.targets()
+        if t.production >= CONSOLIDATION_MIN_TARGET_PRODUCTION
+    ]
+    if not rich_targets:
+        return []
+
+    proposals: list[Step] = []
+    for tgt in rich_targets:
+        ranked_sources = sorted(sources, key=lambda s: GameView.distance(s, tgt))
+        contributing = ranked_sources[:CONSOLIDATION_TOP_K_SOURCES]
+        if len(contributing) < 2:
+            continue
+        needed = ships_needed_to_capture(tgt)
+        per_source_quota = max(1, (needed + len(contributing) - 1) // len(contributing))
+        for src in contributing:
+            ships = min(per_source_quota + 2, src.ships // 2)
+            if ships < 1:
+                continue
+            angle, _arrival = aim_with_orbit_prediction(src, tgt, ships, view)
+            score = tgt.production / (1.0 + GameView.distance(src, tgt))
+            proposals.append(
+                Step(
+                    from_planet_id=int(src.id),
+                    target_planet_id=int(tgt.id),
+                    angle=angle,
+                    ships=int(ships),
+                    score=float(score) * 1.2,  # consolidation bonus
+                )
+            )
+    return proposals

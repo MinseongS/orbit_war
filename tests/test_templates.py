@@ -167,3 +167,48 @@ def test_production_attack_uses_orbit_aware_aim_for_orbiting_targets():
     # If every target is static this test is uninformative — accept either way.
     if any(is_orbiting(by_target[s.target_planet_id]) for s in steps):
         assert diverged, "expected at least one orbit-aware angle to differ from naive atan2"
+
+
+from orbit_war.plan_gen.templates import multi_source_consolidation_template
+
+
+def test_multi_source_consolidation_emits_multiple_steps_to_same_target():
+    """Three friendly sources target one rich enemy planet. Expect 2-3 steps
+    all aimed at the same target."""
+    src1 = Planet(0, 0, 5.0, 5.0, 1.0, 40, 1)
+    src2 = Planet(1, 0, 95.0, 5.0, 1.0, 40, 1)
+    src3 = Planet(2, 0, 5.0, 95.0, 1.0, 40, 1)
+    rich = Planet(3, 1, 50.0, 50.0, 5.0, 100, 5)
+    view = GameView(
+        player=0,
+        planets=(src1, src2, src3, rich),
+        fleets=(),
+        angular_velocity=0.04,
+        initial_planets=(src1, src2, src3, rich),
+        comet_planet_ids=frozenset(),
+        remaining_overage_time=0.0,
+        step=10,
+        comets=(),
+    )
+    steps = multi_source_consolidation_template(view)
+    assert len(steps) >= 2, "consolidation should propose >=2 contributing sources"
+    targets = {s.target_planet_id for s in steps}
+    assert targets == {3}, "all consolidation steps target the rich enemy planet"
+
+
+def test_multi_source_consolidation_quiet_when_only_one_source():
+    """No 'multi'-source possible if we only own one planet."""
+    only = Planet(0, 0, 5.0, 5.0, 1.0, 40, 1)
+    rich = Planet(1, 1, 50.0, 50.0, 1.0, 100, 5)
+    view = GameView(
+        player=0,
+        planets=(only, rich),
+        fleets=(),
+        angular_velocity=0.04,
+        initial_planets=(only, rich),
+        comet_planet_ids=frozenset(),
+        remaining_overage_time=0.0,
+        step=10,
+        comets=(),
+    )
+    assert multi_source_consolidation_template(view) == []
