@@ -4,7 +4,7 @@ pattern, ported to Orbit Wars."""
 
 from __future__ import annotations
 
-from typing import Iterable
+from typing import Callable, Iterable
 
 from orbit_war.plan_gen.step import Step
 
@@ -13,6 +13,7 @@ def compose_plan(
     steps: Iterable[Step],
     surplus_by_planet: dict[int, int],
     allow_truncation: bool = False,
+    validator: Callable[[list[Step]], list[Step]] | None = None,
 ) -> list[Step]:
     """Sort `steps` by descending score and greedily commit, debiting
     `surplus_by_planet[step.from_planet_id]` each time.
@@ -21,7 +22,12 @@ def compose_plan(
     is shrunk to the surplus (provided >=1 ships remain). Otherwise it
     is skipped.
 
-    Returns the committed steps in the order they were chosen.
+    If `validator` is provided, the assembled plan is passed through it
+    after greedy combine; the validator may return the same plan or any
+    other list of Steps (typically `[]` to revert to no-op).
+
+    Returns the committed steps in the order they were chosen (or the
+    validator's return value, if supplied).
     """
     remaining = dict(surplus_by_planet)
     plan: list[Step] = []
@@ -48,4 +54,6 @@ def compose_plan(
             )
         )
         remaining[step.from_planet_id] = 0
+    if validator is not None:
+        plan = validator(plan)
     return plan

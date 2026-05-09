@@ -44,3 +44,20 @@ def test_compose_ignores_steps_from_planets_without_surplus():
     a = Step(from_planet_id=0, target_planet_id=1, angle=0.0, ships=10, score=0.9)
     plan = compose_plan([a], surplus_by_planet={0: 0})
     assert plan == []
+
+
+def test_compose_plan_calls_validator_when_provided():
+    """The validator should receive the chosen plan + surplus snapshot and
+    may return either the plan unchanged or an empty list."""
+    a = Step(from_planet_id=0, target_planet_id=1, angle=0.0, ships=10, score=0.9)
+    captured: list[list[Step]] = []
+
+    def my_validator(plan: list[Step]) -> list[Step]:
+        captured.append(list(plan))
+        return []  # always reject
+
+    result = compose_plan(
+        [a], surplus_by_planet={0: 30}, validator=my_validator,
+    )
+    assert result == []
+    assert captured == [[a]]
