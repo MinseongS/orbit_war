@@ -17,6 +17,7 @@ ZOO_BOT_PATHS: dict[str, str] = {
     "heuristic_v2": "orbit_war.bots.heuristic_v2:agent",
     "heuristic_v3": "orbit_war.bots.heuristic_v3:agent",
     "heuristic_v4": "orbit_war.bots.heuristic_v4:agent",
+    "heuristic_v5": "orbit_war.bots.heuristic_v5:agent",
 }
 
 

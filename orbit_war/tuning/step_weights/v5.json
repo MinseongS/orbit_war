@@ -1,0 +1,40 @@
+{
+  "feature_names": [
+    "is_production_attack",
+    "is_defensive_reinforce",
+    "is_snipe_undefended",
+    "is_multi_source_consolidation",
+    "is_comet_rush",
+    "is_trade_down_strike",
+    "src_ships",
+    "src_production",
+    "tgt_ships",
+    "tgt_production",
+    "step_ships",
+    "ship_lead",
+    "step_normalized"
+  ],
+  "template_names": [
+    "production_attack",
+    "defensive_reinforce",
+    "snipe_undefended",
+    "multi_source_consolidation",
+    "comet_rush",
+    "trade_down_strike"
+  ],
+  "weights": [
+    -121.08985112499114,
+    -58.638393837687,
+    -126.26805864675684,
+    -149.91195552224855,
+    8.881784197001252e-15,
+    -11.597391931964822,
+    -0.22267452738200752,
+    11.223501923227628,
+    0.17863008119207915,
+    18.21651331028468,
+    0.48118264394524224,
+    0.15238598287768323,
+    305.61369962956024
+  ]
+}
