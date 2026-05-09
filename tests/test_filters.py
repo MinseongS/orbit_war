@@ -60,25 +60,10 @@ def test_filter_passes_through_step_for_unknown_target():
     assert len(filter_capturable(steps, view)) == 1
 
 
-def test_filter_keeps_combined_partial_attacks_when_aggregate_exceeds_defender():
-    """Two partial contributions of 20 each (combined 40) vs defender 30+1=31
-    should both survive — the combined fleet captures even though no single
-    contribution is sufficient."""
-    src1 = Planet(0, 0, 5.0, 5.0, 1.0, 50, 1)
-    src2 = Planet(1, 0, 95.0, 5.0, 1.0, 50, 1)
-    enemy = Planet(2, 1, 50.0, 50.0, 1.0, 30, 1)
-    view = _view_with((src1, src2, enemy))
-    steps = [
-        Step(from_planet_id=0, target_planet_id=2, angle=0.0, ships=20, score=0.5),
-        Step(from_planet_id=1, target_planet_id=2, angle=0.0, ships=20, score=0.5),
-    ]
-    out = filter_capturable(steps, view)
-    assert len(out) == 2, "combined contributions should both survive"
-
-
-def test_filter_drops_all_partial_attacks_when_aggregate_below_defender():
-    """Two contributions of 5 each (combined 10) vs defender 30+1=31 should
-    both be dropped — even combined we cannot capture."""
+def test_filter_drops_all_partial_attacks_below_defender():
+    """Multi-source partial contributions are dropped per-step since the
+    W4.1 aggregation was reverted (caused regression vs public_tactical).
+    Two contributions of 5 each vs defender 31 are both dropped."""
     src1 = Planet(0, 0, 5.0, 5.0, 1.0, 50, 1)
     src2 = Planet(1, 0, 95.0, 5.0, 1.0, 50, 1)
     enemy = Planet(2, 1, 50.0, 50.0, 1.0, 30, 1)
@@ -91,26 +76,23 @@ def test_filter_drops_all_partial_attacks_when_aggregate_below_defender():
     assert out == []
 
 
-def test_filter_solo_sufficient_attack_survives_even_with_weak_partner():
-    """Regression: a single-source attack of 50 ships (vs 30+1 defender) must
-    survive even when a sibling step from another source contributes only 5
-    ships to the same target. The early aggregate-only rule incorrectly
-    grouped the 50-ship attack with the 5-ship partial; if combined (55)
-    happened to fall short, both were dropped. The short-circuit fix lets
-    individually-sufficient attacks pass regardless of group fate."""
+def test_filter_solo_sufficient_attack_survives_alongside_weak_partner():
+    """A single-source attack of 50 ships (vs 30+1 defender) must survive
+    even when a sibling step from another source contributes only 5 ships
+    to the same target. Per-step semantics: solo passes, weak partial drops."""
     src1 = Planet(0, 0, 5.0, 5.0, 1.0, 100, 1)
     src2 = Planet(1, 0, 95.0, 5.0, 1.0, 10, 1)
     enemy = Planet(2, 1, 50.0, 50.0, 1.0, 30, 1)
     view = _view_with((src1, src2, enemy))
     steps = [
-        # Solo attack — 50 ships > 31 needed. Must pass.
         Step(from_planet_id=0, target_planet_id=2, angle=0.0, ships=50, score=0.9),
-        # Weak partial — 5 ships. By itself can't capture.
         Step(from_planet_id=1, target_planet_id=2, angle=0.0, ships=5, score=0.3),
     ]
     out = filter_capturable(steps, view)
     surviving_solo = [s for s in out if s.from_planet_id == 0]
     assert len(surviving_solo) == 1, (
-        "individually-sufficient solo attack must survive regardless of "
-        "weaker partial contributions sharing the target"
+        "individually-sufficient solo attack must always survive"
+    )
+    assert all(s.from_planet_id != 1 for s in out), (
+        "weak partial must be dropped (per-step semantics)"
     )
