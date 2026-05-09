@@ -97,3 +97,46 @@ def defensive_reinforce_template(view: GameView) -> list[Step]:
             )
         )
     return proposals
+
+
+SNIPE_DEFENSE_THRESHOLD = 10
+SNIPE_PRODUCTION_THRESHOLD = 2
+
+
+def snipe_undefended_template(view: GameView) -> list[Step]:
+    """Find low-defence, high-production targets and route the closest source.
+
+    Filters: target must be non-owned, `ships < SNIPE_DEFENSE_THRESHOLD`,
+    `production >= SNIPE_PRODUCTION_THRESHOLD`. Source must be able to
+    afford `target.ships + 1` ships.
+    """
+    candidates = [
+        t
+        for t in view.targets()
+        if t.ships < SNIPE_DEFENSE_THRESHOLD
+        and t.production >= SNIPE_PRODUCTION_THRESHOLD
+    ]
+    if not candidates:
+        return []
+
+    sources = [p for p in view.my_planets() if p.ships >= 2]
+    if not sources:
+        return []
+
+    proposals: list[Step] = []
+    for tgt in candidates:
+        nearest = min(sources, key=lambda s: GameView.distance(s, tgt))
+        needed = ships_needed_to_capture(tgt)
+        if nearest.ships < needed:
+            continue
+        score = tgt.production / (needed + 1.0)
+        proposals.append(
+            Step(
+                from_planet_id=int(nearest.id),
+                target_planet_id=int(tgt.id),
+                angle=Step.angle_to(nearest, tgt),
+                ships=int(needed),
+                score=float(score),
+            )
+        )
+    return proposals

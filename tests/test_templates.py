@@ -93,3 +93,45 @@ def test_defensive_reinforce_quiet_when_no_threat():
         comets=(),
     )
     assert defensive_reinforce_template(view) == []
+
+
+from orbit_war.plan_gen.templates import snipe_undefended_template
+
+
+def test_snipe_undefended_finds_low_defense_high_prod_target():
+    me = Planet(0, 0, 10.0, 10.0, 1.0, 50, 2)
+    juicy = Planet(1, -1, 20.0, 10.0, 2.5, 3, 4)  # cheap + high production
+    boring = Planet(2, -1, 80.0, 80.0, 1.0, 80, 1)
+    view = GameView(
+        player=0,
+        planets=(me, juicy, boring),
+        fleets=(),
+        angular_velocity=0.04,
+        initial_planets=(me, juicy, boring),
+        comet_planet_ids=frozenset(),
+        remaining_overage_time=0.0,
+        step=10,
+        comets=(),
+    )
+    steps = snipe_undefended_template(view)
+    assert any(s.target_planet_id == 1 for s in steps)
+    for s in steps:
+        assert s.target_planet_id != 2
+
+
+def test_snipe_undefended_skips_planets_we_cant_afford():
+    me = Planet(0, 0, 10.0, 10.0, 1.0, 2, 1)  # only 2 ships
+    juicy = Planet(1, -1, 20.0, 10.0, 2.5, 5, 4)  # needs 6 ships to capture
+    view = GameView(
+        player=0,
+        planets=(me, juicy),
+        fleets=(),
+        angular_velocity=0.04,
+        initial_planets=(me, juicy),
+        comet_planet_ids=frozenset(),
+        remaining_overage_time=0.0,
+        step=10,
+        comets=(),
+    )
+    steps = snipe_undefended_template(view)
+    assert steps == []
