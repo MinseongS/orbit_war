@@ -18,6 +18,7 @@ Kaggle simulation competition. Bot-vs-bot 1v1 / 4p FFA on a 100x100 continuous b
 - Keep agent code submission-ready: a `main.py` at the project root with an `agent(obs)` function (or a `tar.gz` bundle).
 - Test locally with `kaggle_environments.make("orbit_wars")` before every submission — daily quota is precious.
 - Run tests with `uv run pytest -q`.
+- W2 champion: heuristic_v1. Use `uv run ow-gate orbit_war.bots.heuristic_v1:agent` to gate challengers. (heuristic_v2 fell back to v1 weights — see commit `bae8e27`.)
 
 ---
 
