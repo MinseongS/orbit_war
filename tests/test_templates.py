@@ -48,3 +48,48 @@ def test_production_attack_ships_are_min_to_capture():
 def _source_ships(view: GameView, planet_id: int) -> int:
     p = next(q for q in view.planets if q.id == planet_id)
     return p.ships
+
+
+from kaggle_environments.envs.orbit_wars.orbit_wars import Fleet, Planet
+
+from orbit_war.plan_gen.templates import defensive_reinforce_template
+
+
+def test_defensive_reinforce_emits_when_planet_under_attack():
+    threatened = Planet(0, 0, 30.0, 30.0, 1.0, 5, 1)
+    helper = Planet(1, 0, 35.0, 30.0, 1.0, 50, 1)
+    enemy = Planet(2, 1, 80.0, 80.0, 1.0, 1, 1)
+    incoming = Fleet(0, 1, 32.0, 30.0, 0.0, 2, 30)
+    view = GameView(
+        player=0,
+        planets=(threatened, helper, enemy),
+        fleets=(incoming,),
+        angular_velocity=0.04,
+        initial_planets=(threatened, helper, enemy),
+        comet_planet_ids=frozenset(),
+        remaining_overage_time=0.0,
+        step=10,
+        comets=(),
+    )
+    steps = defensive_reinforce_template(view)
+    assert any(s.target_planet_id == 0 for s in steps)
+    for s in steps:
+        if s.target_planet_id == 0:
+            assert s.from_planet_id == 1
+
+
+def test_defensive_reinforce_quiet_when_no_threat():
+    me = Planet(0, 0, 30.0, 30.0, 1.0, 5, 1)
+    enemy = Planet(1, 1, 80.0, 80.0, 1.0, 1, 1)
+    view = GameView(
+        player=0,
+        planets=(me, enemy),
+        fleets=(),
+        angular_velocity=0.04,
+        initial_planets=(me, enemy),
+        comet_planet_ids=frozenset(),
+        remaining_overage_time=0.0,
+        step=10,
+        comets=(),
+    )
+    assert defensive_reinforce_template(view) == []

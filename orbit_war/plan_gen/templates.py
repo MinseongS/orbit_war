@@ -55,3 +55,45 @@ def production_attack_template(view: GameView) -> list[Step]:
             )
         )
     return proposals
+
+
+from orbit_war.eval.features import incoming_threat
+
+
+def defensive_reinforce_template(view: GameView) -> list[Step]:
+    """For each owned planet under threat, propose a reinforcement from the
+    nearest friendly planet that has surplus ships.
+
+    Scoring favours higher threat and shorter rescue distance.
+    """
+    proposals: list[Step] = []
+    for target in view.my_planets():
+        threat = incoming_threat(view, view.player, target.id, horizon=30)
+        if threat == 0:
+            continue
+        defender_window = target.ships + target.production * 5
+        if threat <= defender_window:
+            continue  # We'll survive without help.
+        deficit = threat - defender_window
+        helpers = [
+            p
+            for p in view.my_planets()
+            if p.id != target.id and p.ships > 1
+        ]
+        if not helpers:
+            continue
+        nearest = min(helpers, key=lambda h: GameView.distance(h, target))
+        ships = min(int(nearest.ships), deficit + 1)
+        if ships < 1:
+            continue
+        score = deficit / (1.0 + GameView.distance(nearest, target))
+        proposals.append(
+            Step(
+                from_planet_id=int(nearest.id),
+                target_planet_id=int(target.id),
+                angle=Step.angle_to(nearest, target),
+                ships=int(ships),
+                score=float(score),
+            )
+        )
+    return proposals
