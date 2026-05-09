@@ -3,9 +3,11 @@
 Differences from heuristic_v3:
 - multi_source_consolidation now actually fires (filter_capturable was
   fixed in W4.1 to aggregate per target).
-- Validator uses a *predicted* opponent plan via predict_opponent_plan
-  instead of assuming the opponent is passive.
-- Adds trade_down_strike_template for late-game grinding when ahead."""
+- Adds trade_down_strike_template for late-game grinding when ahead.
+- Validator remains passive (W4.3's adversarial variant via
+  predict_opponent_plan caused excessive plan vetoes — see commit notes).
+  The predict_opponent_plan import is retained for W5 to retry with a
+  different opponent-prediction strategy."""
 
 from __future__ import annotations
 
