@@ -63,3 +63,23 @@ def test_gameview_handles_none_valued_obs_fields():
     assert view.initial_planets == ()
     assert view.comet_planet_ids == frozenset()
     assert view.remaining_overage_time == 0.0
+
+
+def test_gameview_exposes_step_field():
+    env = make("orbit_wars", configuration={"seed": 42}, debug=True)
+    env.reset(num_agents=2)
+    obs = env.steps[0][0]["observation"]
+
+    view = GameView.from_obs(obs)
+    assert view.step == obs.get("step", 0)
+
+
+def test_gameview_exposes_comets_metadata():
+    env = make("orbit_wars", configuration={"seed": 42}, debug=True)
+    env.reset(num_agents=2)
+    obs = env.steps[0][0]["observation"]
+
+    view = GameView.from_obs(obs)
+    assert isinstance(view.comets, tuple)
+    for group in view.comets:
+        assert "planet_ids" in group

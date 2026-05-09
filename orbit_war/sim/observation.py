@@ -18,6 +18,8 @@ class GameView:
     initial_planets: tuple[Planet, ...]
     comet_planet_ids: frozenset[int]
     remaining_overage_time: float
+    step: int
+    comets: tuple[dict, ...]
 
     @staticmethod
     def from_obs(obs) -> "GameView":
@@ -33,6 +35,8 @@ class GameView:
             initial_planets=initial,
             comet_planet_ids=frozenset(get("comet_planet_ids") or []),
             remaining_overage_time=float(get("remainingOverageTime") or 0.0),
+            step=int(get("step") or 0),
+            comets=tuple(get("comets") or []),
         )
 
     def my_planets(self) -> tuple[Planet, ...]:
