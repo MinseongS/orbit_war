@@ -26,7 +26,7 @@ fi
 
 # Gate enforcement: only submit bots that pass the local gate.
 echo "Running ow-gate against current champion before submission..."
-if ! uv run ow-gate "$BOT_SPEC" --seeds 10 --workers 4 > /tmp/ow-gate.log 2>&1; then
+if ! uv run ow-gate "$BOT_SPEC" --seeds 25 --workers 4 > /tmp/ow-gate.log 2>&1; then
   echo "GATE FAILED — refusing to submit. Output:" >&2
   cat /tmp/ow-gate.log >&2
   exit 1

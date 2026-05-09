@@ -152,6 +152,11 @@ def _resolve_combat(planet: Planet, arrivals: list[tuple[int, int]]) -> Planet:
         by_owner[owner] = by_owner.get(owner, 0) + ships
     # The planet itself contributes its garrison under its current owner.
     by_owner[planet.owner] = by_owner.get(planet.owner, 0) + planet.ships
+    # Known divergence from official sim: when two owners arrive with equal
+    # ship counts the result depends on dict insertion order (arrivals are
+    # inserted before the garrison contribution), so a tie resolves toward
+    # the attacker. The official simulator may handle ties differently.
+    # Acceptable within this simulator's documented ~5% drift budget.
     # Largest force wins; surplus = largest - 2nd largest.
     sorted_forces = sorted(by_owner.items(), key=lambda kv: -kv[1])
     if len(sorted_forces) == 1:
