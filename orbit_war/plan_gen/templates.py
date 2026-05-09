@@ -10,6 +10,8 @@ multi-source consolidation, and tack/feint patterns.
 
 from __future__ import annotations
 
+import math
+
 from orbit_war.eval.features import incoming_threat
 from orbit_war.plan_gen.aim import aim_with_orbit_prediction
 from orbit_war.plan_gen.step import Step, ships_needed_to_capture
@@ -188,6 +190,55 @@ def multi_source_consolidation_template(view: GameView) -> list[Step]:
                     angle=angle,
                     ships=int(ships),
                     score=float(score) * 1.2,  # consolidation bonus
+                )
+            )
+    return proposals
+
+
+COMET_SPAWN_STEPS = (50, 150, 250, 350, 450)
+COMET_RUSH_PRE_WINDOW = 5  # fire in the 5 steps before each spawn
+COMET_RUSH_QUADRANT_TARGETS = (
+    (25.0, 25.0),
+    (75.0, 25.0),
+    (25.0, 75.0),
+    (75.0, 75.0),
+)
+
+
+def _is_comet_pre_window(step: int) -> bool:
+    return any(0 < spawn - step <= COMET_RUSH_PRE_WINDOW for spawn in COMET_SPAWN_STEPS)
+
+
+def comet_rush_template(view: GameView) -> list[Step]:
+    """In the 5 turns before each comet spawn, propose attacks from each owned
+    planet aimed at the four quadrant centers where comets typically appear.
+
+    Each step sends a small probe (10-20 ships, capped at src.ships // 4)
+    so we don't drain home planets. Uses the source's own id as a placeholder
+    target_planet_id (filter_capturable treats this as a self-reinforcement
+    and passes it through; the composer's surplus check still applies)."""
+    if not _is_comet_pre_window(view.step):
+        return []
+
+    sources = [p for p in view.my_planets() if p.ships >= 10]
+    if not sources:
+        return []
+
+    proposals: list[Step] = []
+    for src in sources:
+        for tx, ty in COMET_RUSH_QUADRANT_TARGETS:
+            ships = min(20, src.ships // 4)
+            if ships < 10:
+                continue
+            angle = math.atan2(ty - src.y, tx - src.x)
+            distance_score = 1.0 / (1.0 + math.hypot(tx - src.x, ty - src.y))
+            proposals.append(
+                Step(
+                    from_planet_id=int(src.id),
+                    target_planet_id=int(src.id),  # placeholder: comet has no stable id at launch
+                    angle=float(angle),
+                    ships=int(ships),
+                    score=float(distance_score) * 0.8,
                 )
             )
     return proposals

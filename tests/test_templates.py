@@ -212,3 +212,41 @@ def test_multi_source_consolidation_quiet_when_only_one_source():
         comets=(),
     )
     assert multi_source_consolidation_template(view) == []
+
+
+from orbit_war.plan_gen.templates import comet_rush_template
+
+
+def test_comet_rush_quiet_outside_pre_spawn_window():
+    me = Planet(0, 0, 50.0, 50.0, 1.0, 50, 1)
+    enemy = Planet(1, 1, 90.0, 90.0, 1.0, 5, 1)
+    view = GameView(
+        player=0,
+        planets=(me, enemy),
+        fleets=(),
+        angular_velocity=0.04,
+        initial_planets=(me, enemy),
+        comet_planet_ids=frozenset(),
+        remaining_overage_time=0.0,
+        step=200,  # not near any spawn
+        comets=(),
+    )
+    assert comet_rush_template(view) == []
+
+
+def test_comet_rush_fires_in_pre_spawn_window():
+    me = Planet(0, 0, 50.0, 50.0, 1.0, 100, 1)
+    enemy = Planet(1, 1, 90.0, 90.0, 1.0, 5, 1)
+    view = GameView(
+        player=0,
+        planets=(me, enemy),
+        fleets=(),
+        angular_velocity=0.04,
+        initial_planets=(me, enemy),
+        comet_planet_ids=frozenset(),
+        remaining_overage_time=0.0,
+        step=48,  # within 5 turns of step 50 spawn
+        comets=(),
+    )
+    steps = comet_rush_template(view)
+    assert len(steps) > 0
