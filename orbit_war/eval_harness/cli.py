@@ -13,6 +13,7 @@ ZOO_BOT_PATHS: dict[str, str] = {
     "starter": "orbit_war.bots.starter_bot:agent",
     "greedy": "orbit_war.bots.greedy_baseline:agent",
     "public_tactical": "orbit_war.bots.public_tactical:agent",
+    "heuristic_v1": "orbit_war.bots.heuristic_v1:agent",
 }
 
 
