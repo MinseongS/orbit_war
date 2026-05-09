@@ -242,3 +242,57 @@ def comet_rush_template(view: GameView) -> list[Step]:
                 )
             )
     return proposals
+
+
+TRADE_DOWN_MIN_STEP = 300
+TRADE_DOWN_MIN_LEAD = 20
+
+
+def trade_down_strike_template(view: GameView) -> list[Step]:
+    """Late-game template: when ahead, trade ships with the opponent.
+
+    Each trade preserves absolute lead while reducing both totals — risk
+    reduction when winning. Fires only when:
+      - `view.step >= TRADE_DOWN_MIN_STEP` (late game), and
+      - our total ships exceed opponent's by `TRADE_DOWN_MIN_LEAD` ships.
+
+    Sources: each owned planet with ships >= 10.
+    Targets: every enemy planet within 70 board units.
+    Each step sends `min(target.ships + 1, source.ships // 3)` so we don't
+    drain a single source on a single trade.
+    """
+    if view.step < TRADE_DOWN_MIN_STEP:
+        return []
+
+    me = view.player
+    my_ships = sum(p.ships for p in view.planets if p.owner == me)
+    enemy_ships = sum(p.ships for p in view.planets if p.owner != me and p.owner != -1)
+    if my_ships - enemy_ships < TRADE_DOWN_MIN_LEAD:
+        return []
+
+    enemies = list(view.enemy_planets())
+    if not enemies:
+        return []
+
+    proposals: list[Step] = []
+    for src in view.my_planets():
+        if src.ships < 10:
+            continue
+        for tgt in enemies:
+            if GameView.distance(src, tgt) > 70:
+                continue
+            ships = min(int(tgt.ships) + 1, src.ships // 3)
+            if ships < 5:
+                continue
+            angle, _arrival = aim_with_orbit_prediction(src, tgt, ships, view)
+            score = (my_ships - enemy_ships) / (1.0 + GameView.distance(src, tgt))
+            proposals.append(
+                Step(
+                    from_planet_id=int(src.id),
+                    target_planet_id=int(tgt.id),
+                    angle=angle,
+                    ships=int(ships),
+                    score=float(score) * 0.6,  # slight de-emphasis vs offense
+                )
+            )
+    return proposals

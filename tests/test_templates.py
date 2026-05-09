@@ -250,3 +250,59 @@ def test_comet_rush_fires_in_pre_spawn_window():
     )
     steps = comet_rush_template(view)
     assert len(steps) > 0
+
+
+from orbit_war.plan_gen.templates import trade_down_strike_template
+
+
+def test_trade_down_quiet_when_not_ahead():
+    me = Planet(0, 0, 10.0, 10.0, 1.0, 30, 1)
+    enemy = Planet(1, 1, 90.0, 90.0, 1.0, 100, 1)
+    view = GameView(
+        player=0,
+        planets=(me, enemy),
+        fleets=(),
+        angular_velocity=0.04,
+        initial_planets=(me, enemy),
+        comet_planet_ids=frozenset(),
+        remaining_overage_time=0.0,
+        step=350,
+        comets=(),
+    )
+    assert trade_down_strike_template(view) == []
+
+
+def test_trade_down_quiet_in_early_game():
+    me = Planet(0, 0, 10.0, 10.0, 1.0, 200, 1)
+    enemy = Planet(1, 1, 90.0, 90.0, 1.0, 30, 1)
+    view = GameView(
+        player=0,
+        planets=(me, enemy),
+        fleets=(),
+        angular_velocity=0.04,
+        initial_planets=(me, enemy),
+        comet_planet_ids=frozenset(),
+        remaining_overage_time=0.0,
+        step=100,  # too early
+        comets=(),
+    )
+    assert trade_down_strike_template(view) == []
+
+
+def test_trade_down_fires_in_late_game_when_ahead():
+    me = Planet(0, 0, 10.0, 10.0, 1.0, 200, 1)
+    enemy = Planet(1, 1, 50.0, 50.0, 1.0, 30, 1)
+    view = GameView(
+        player=0,
+        planets=(me, enemy),
+        fleets=(),
+        angular_velocity=0.04,
+        initial_planets=(me, enemy),
+        comet_planet_ids=frozenset(),
+        remaining_overage_time=0.0,
+        step=400,
+        comets=(),
+    )
+    steps = trade_down_strike_template(view)
+    assert len(steps) > 0
+    assert all(s.target_planet_id == 1 for s in steps)
